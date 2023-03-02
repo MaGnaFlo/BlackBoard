@@ -1,7 +1,7 @@
 import pygame as pg 
 from pygame.locals import QUIT
 from parameters import *
-from widgets import ToolBar
+from widgets import ToolBar, Slider
 from scipy.ndimage import gaussian_filter1d
 from functions import *
 
@@ -13,8 +13,8 @@ if __name__ == "__main__":
 
 	background = pg.Surface((w,h))
 
-	tool_bar = ToolBar(background, thickness=100)
-	tool_bar.addSlider(200, 6)
+	tool_bar = ToolBar(background, 0, h-200, w, TOOLBAR_THICKNESS, GREY)
+	thickness_slider = Slider(background, 100, 100, 100, SLIDER_THICKNESS, WHITE)
 
 	draw_on = False
 	points_list = []
@@ -74,7 +74,9 @@ if __name__ == "__main__":
 
 		# widgets
 		tool_bar.draw()
+		thickness_slider.draw()
 
+		# update screen
 		screen.blit(background, (0,0))
 		pg.display.flip()
 
