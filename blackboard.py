@@ -14,7 +14,7 @@ if __name__ == "__main__":
 	background = Widget(0, 0, W, H, BLACK)
 
 	tool_bar = ToolBar(0, H-TOOLBAR_THICKNESS, W, TOOLBAR_THICKNESS, GREY)
-	thickness_slider = Slider(100, 100, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE)
+	thickness_slider = Slider(50, 670, SLIDER_LENGTH, SLIDER_THICKNESS, BLACK)
 
 	widgets = pg.sprite.Group()
 	widgets.add(background)
@@ -23,6 +23,7 @@ if __name__ == "__main__":
 	widgets.add(thickness_slider.slider_block)
 
 	draw_on = False
+	slider_move_on = False
 	points_list = []
 	current_points_index = -1
 	start_smooth_index = 0
@@ -35,13 +36,24 @@ if __name__ == "__main__":
 
 			# mouse
 			if event.type == pg.MOUSEBUTTONDOWN:
-				last_pos = event.pos
-				points_list.append([])
-				current_points_index += 1
-				draw_on = True
+				for w in widgets:
+					if w.type == "slider":
+						belong = w.belongs(event.pos)
+					else:
+						belong = -1
+					if belong == 2:
+						slider_move_on = True
+					elif belong == 1:
+						print("slider")
+					else:
+						last_pos = event.pos
+						points_list.append([])
+						current_points_index += 1
+						draw_on = True
 
 			if event.type == pg.MOUSEBUTTONUP:
 				draw_on = False
+				slider_move_on = False
 
 			if event.type == pg.MOUSEMOTION:
 				if tool_bar.belongs(event.pos):
@@ -50,8 +62,14 @@ if __name__ == "__main__":
 							current_points_index, start_smooth_index,
 							SIZE, mode=SMOOTH_MODE)
 						start_smooth_index = 0
+
+				if slider_move_on:
+					w = widgets.sprites()[2]
+					w.__class__ = Slider # ugly? but works (cast)
+					w = w.update_block_pos(event.pos)
+					widgets.add(w)
 						
-				if draw_on:
+				elif draw_on:
 					# draw_step(background, WHITE, last_pos, event.pos, SIZE)
 
 					for pts in points_list:
