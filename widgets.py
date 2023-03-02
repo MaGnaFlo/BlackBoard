@@ -58,11 +58,8 @@ class Slider(Widget):
 		ycond = self.slider_block.rect.y <= y_ <= self.slider_block.rect.y + self.slider_block.rect.height
 
 		if xcond and ycond:
-			print('ok')
 			return 2
 		elif self.parent.belongs(pos):
-			print("bar")
 			return 1
 		else:
-			print("nope")
 			return 0

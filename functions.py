@@ -2,12 +2,12 @@ import pygame as pg
 from parameters import *
 from scipy.ndimage import gaussian_filter1d
 
-def draw_step(surface, color, start, end, size):
-	pg.draw.line(surface, color, start, end, 2*size)
+def draw_step(widget, color, start, end, size):
+	pg.draw.line(widget.image, color, start, end, 2*size)
 
-def smooth_step(surface, points, points_index, smooth_index, size, mode="gaussian"):
+def smooth_step(widget, points, points_index, smooth_index, size, mode="gaussian"):
 	# wipe
-	surface.fill(BLACK)
+	widget.image.fill(BLACK)
 
 	# target last points
 	points_to_smooth = points[points_index]
@@ -31,6 +31,6 @@ def smooth_step(surface, points, points_index, smooth_index, size, mode="gaussia
 
 	# redraw
 	for pts in points[:points_index]:
-		[draw_step(surface, WHITE, pts[i], pts[i+1], size) for i in range(len(pts)-1)]
+		[draw_step(widget, WHITE, pts[i], pts[i+1], size) for i in range(len(pts)-1)]
 
 	return points
