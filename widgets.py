@@ -50,7 +50,7 @@ class Slider(Widget):
 			self.slider_block = Widget(x-self.block_size//4, self.y-self.block_size//4-self.height//2, 
 										self.block_size, self.block_size, WHITE, self.parent)
 			self.value = self.rect.width - x + self.x
-		return self.slider_block
+		return self.slider_block, self.value//8
 
 	def belongs(self, pos):
 		x_, y_ = pos 
