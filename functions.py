@@ -23,7 +23,7 @@ def draw_step(widget, color, start, end, size):
 	pg.gfxdraw.aapolygon(widget.image, (UL, UR, BR, BL), color)
 	pg.gfxdraw.filled_polygon(widget.image, (UL, UR, BR, BL), color)
 
-def smooth_step(widget, points, points_index, smooth_index, size, mode="gaussian"):
+def smooth_step(widget, points, sizes, points_index, smooth_index, size, mode="gaussian"):
 	# wipe
 	widget.image.fill(BLACK)
 
@@ -48,7 +48,7 @@ def smooth_step(widget, points, points_index, smooth_index, size, mode="gaussian
 	points = points[:points_index] + [points[points_index][:-smooth_index] + points_smoothed]
 
 	# redraw
-	for pts in points[:points_index]:
-		[draw_step(widget, WHITE, pts[i], pts[i+1], size) for i in range(len(pts)-1)]
+	for i, pts in enumerate(points[:points_index]):
+		[draw_step(widget, WHITE, pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
 	return points
