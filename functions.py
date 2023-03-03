@@ -5,28 +5,13 @@ from scipy.ndimage import gaussian_filter1d
 import numpy as np
 
 def draw_step(widget, color, start, end, size):
-	# pg.draw.line(widget.image, color, start, end, size)
-	# pg.draw.circle(widget.image, color, start, size)
-	center_L1 = [(start[0]+end[0]) / 2., (start[1]+end[1]) / 2.]
-	length = 5  # Total length of line
-	thickness = size
-	angle = np.arctan2(start[1] - end[1], start[0] - end[0])
+	pg.draw.line(widget.image, color, start, end, 2*size)
+	pg.draw.circle(widget.image, color, start, size)
 
-	UL = (center_L1[0] + (length/2.) * np.cos(angle) - (thickness/2.) * np.sin(angle),
-      center_L1[1] + (thickness/2.) * np.cos(angle) + (length/2.) * np.sin(angle))
-	UR = (center_L1[0] - (length/2.) * np.cos(angle) - (thickness/2.) * np.sin(angle),
-	      center_L1[1] + (thickness/2.) * np.cos(angle) - (length/2.) * np.sin(angle))
-	BL = (center_L1[0] + (length/2.) * np.cos(angle) + (thickness/2.) * np.sin(angle),
-	      center_L1[1] - (thickness/2.) * np.cos(angle) + (length/2.) * np.sin(angle))
-	BR = (center_L1[0] - (length/2.) * np.cos(angle) + (thickness/2.) * np.sin(angle),
-	      center_L1[1] - (thickness/2.) * np.cos(angle) - (length/2.) * np.sin(angle))
-	pg.gfxdraw.aapolygon(widget.image, (UL, UR, BR, BL), color)
-	pg.gfxdraw.filled_polygon(widget.image, (UL, UR, BR, BL), color)
-
-def smooth_step(widget, points, sizes, points_index, smooth_index, size, mode="gaussian"):
+def smooth_step(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
 	# wipe
 	widget.image.fill(BLACK)
-
+	print(sigma)
 	# target last points
 	points_to_smooth = points[points_index]
 	if len(points_to_smooth) > smooth_index:
@@ -34,7 +19,7 @@ def smooth_step(widget, points, sizes, points_index, smooth_index, size, mode="g
 
 	# smooth
 	if mode == "gaussian":
-		func = lambda x: gaussian_filter1d(x, GAUSS_SIGMA)
+		func = lambda x: gaussian_filter1d(x, sigma) if sigma>0 else x
 	elif mode == "savgol":
 		func = lambda x: savgol_filter(x, SAVGOL_WIN, SAVGOL_ORDER)
 	
