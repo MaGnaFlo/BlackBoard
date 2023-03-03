@@ -2,7 +2,7 @@ import pygame as pg
 from parameters import *
 
 class Widget(pg.sprite.Sprite):
-	def __init__(self, x, y, width, height, color, parent=None):
+	def __init__(self, x, y, width, height, color, parent=None, name=""):
 		super().__init__()
 		self.parent = super()
 		self.image = pg.Surface([width, height])
@@ -10,7 +10,7 @@ class Widget(pg.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
-		self.type = ""
+		self.name = name
 
 	def belongs(self, pos):
 		x_, y_ = pos 
@@ -20,14 +20,14 @@ class Widget(pg.sprite.Sprite):
 
 
 class ToolBar(Widget):
-	def __init__(self, x, y, width, height, color, parent=None):
+	def __init__(self, x, y, width, height, color, parent=None, name=""):
 		super().__init__(x, y, width, height, color)
 		self.parent = super()
-		self.type = "toolbar"
+		self.name = name
 
 
 class Slider(Widget):
-	def __init__(self, x, y, width, height, color, parent=None):
+	def __init__(self, x, y, width, height, color, min_value, max_value, parent=None, name=""):
 		super().__init__(x, y, width, height, color)
 		self.parent = super()
 		self.block_size = height * 4 # TODO: careful with the '4'. changing it changes the centering
@@ -35,22 +35,24 @@ class Slider(Widget):
 									self.block_size, self.block_size, WHITE, parent)
 		self.width = width
 		self.height = height
-
 		self.x = x 
 		self.y = y
 
-		self.value = 0
-
-		self.type = "slider"
+		self.min_value = min_value
+		self.max_value = max_value
+		self.value = min_value
+		self.name = name
 
 	def update_block_pos(self, pos): # set for horizontal slider
 		x, y = pos
 		if self.rect.x <= x <= self.rect.x + self.rect.width:
-			self.slider_block.kill()
 			self.slider_block = Widget(x-self.block_size//4, self.y-self.block_size//4-self.height//2, 
 										self.block_size, self.block_size, WHITE, self.parent)
-			self.value = x + self.x - self.rect.width//2
-		return self.slider_block, self.value//4 # arbitrary value
+			self.value = x - self.x
+			self.value = self.value / self.width * (self.max_value - self.min_value) + self.min_value
+			self.value = int(self.value)
+
+		return self.slider_block, self.value # arbitrary value
 
 	def belongs(self, pos):
 		x_, y_ = pos 
