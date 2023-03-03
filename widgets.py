@@ -1,5 +1,5 @@
 import pygame as pg
-from parameters import *
+from parameters import PARAMS
 
 class Widget(pg.sprite.Sprite):
 	''' General class handling widgets. '''
@@ -31,7 +31,7 @@ class ToolBar(Widget):
 
 class Label(Widget):
 	''' Label widget'''
-	def __init__(self, x, y, text, font='Verdana', fontsize=14, color=WHITE, name=""):
+	def __init__(self, x, y, text, font='Verdana', fontsize=14, color=PARAMS["color"]["w"], name=""):
 		super().__init__(x, y, len(text), fontsize, color, name=name)
 		self.font = pg.font.SysFont(font, fontsize)
 		self.image = self.font.render(text, 1, color)
@@ -41,15 +41,17 @@ class Slider(Widget):
 	''' Slider widget.
 		Includes a slider block. 
 	'''
-	def __init__(self, x, y, width, height, color, init_value, min_value, max_value, parent=None, name=""):
+	def __init__(self, x, y, width, height, color, block_color, init_value, min_value, max_value, parent=None, name=""):
 		super().__init__(x, y, width, height, color)
 		self.parent = super()
 		self.image.fill(color)
 
 		self.block_size = height * 4 # TODO: careful with the '4'. changing it changes the centering
 		self.slider_block = Widget(x-self.block_size//4, y-self.block_size//4-height//2, 
-									self.block_size, self.block_size, WHITE, parent)
-		self.slider_block.image.fill(BLACK) # change color to parameter later
+									self.block_size, self.block_size, 
+									block_color, parent)
+		self.block_color = block_color
+		self.slider_block.image.fill(block_color) # change color to parameter later
 		
 		# set block pos according to init_value
 		self.slider_block.rect.x = init_value / (max_value-min_value) * width + x
@@ -66,11 +68,16 @@ class Slider(Widget):
 
 	def update_block_pos(self, pos): # set for horizontal slider
 		''' Sets the position of the slider block along the slider.
-		    Sets the corresponding value accordingly.'''
+		    Sets the corresponding value accordingly.
+		'''
 		x, y = pos
 		if self.rect.x <= x <= self.rect.x + self.rect.width:
 			self.slider_block = Widget(x-self.block_size//4, self.y-self.block_size//4-self.height//2, 
-										self.block_size, self.block_size, WHITE, self.parent)
+										self.block_size, self.block_size, 
+										(145,140,200), self.parent)
+			self.block_color = PARAMS["slider"]["block_color"]
+			self.slider_block.image.fill(self.block_color)
+
 			self.value = x - self.x
 			self.value = self.value / self.width * (self.max_value - self.min_value) + self.min_value
 			self.value = int(self.value)
