@@ -5,10 +5,15 @@ from scipy.ndimage import gaussian_filter1d
 import numpy as np
 
 def draw_step(widget, color, start, end, size):
+	''' Draws the link between two points in a drawing iteration. '''
 	pg.draw.line(widget.image, color, start, end, 2*size)
 	pg.draw.circle(widget.image, color, start, size)
 
 def smooth_step(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
+	''' Smoothes a portion of the drawing line.
+		points_index: index of the current line (set of points).
+		smooth_index: start index of the drawn line.
+	'''
 	# wipe
 	widget.image.fill(BLACK)
 	print(sigma)
