@@ -7,7 +7,6 @@ class Widget(pg.sprite.Sprite):
 		super().__init__()
 		self.parent = super()
 		self.image = pg.Surface([width, height])
-		# self.image.fill(color)
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
@@ -29,15 +28,14 @@ class ToolBar(Widget):
 		self.name = name
 		self.image.fill(color)
 
+
 class Label(Widget):
 	''' Label widget'''
 	def __init__(self, x, y, text, font='Verdana', fontsize=14, color=WHITE, name=""):
 		super().__init__(x, y, len(text), fontsize, color, name=name)
 		self.font = pg.font.SysFont(font, fontsize)
 		self.image = self.font.render(text, 1, color)
-
-	# def draw(self):
-	# 	self.image.blit(self.textSurf, self.rect)
+		
 
 class Slider(Widget):
 	''' Slider widget.

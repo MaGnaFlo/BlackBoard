@@ -16,10 +16,10 @@ if __name__ == "__main__":
 	background = Widget(0, 0, W, H, BLACK, name="background")
 	tool_bar = ToolBar(0, H-TOOLBAR_THICKNESS, W, TOOLBAR_THICKNESS, GREY, name='tool_bar')
 	
-	thickness_label = Label(20, 630 - SLIDER_THICKNESS, "Thickness", color=WHITE, name="thickness_label")
-	thickness_slider = Slider(150, 630, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE, SLIDER_THICKNESS, 1, 50, name="thickness")
-	smoothness_label = Label(20, 670 - SLIDER_THICKNESS, "Smoothness", color=WHITE, name="smoothness_label")
-	smoothness_slider = Slider(150, 670, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE, GAUSS_SIGMA, 0, 10, name="smoothness")
+	thickness_label = Label(20, 630 - SLIDER_THICKNESS - 2, "Thickness", color=WHITE, name="thickness_label")
+	thickness_slider = Slider(135, 630, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE, SLIDER_THICKNESS, 1, 20, name="thickness")
+	smoothness_label = Label(20, 670 - SLIDER_THICKNESS - 2, "Smoothness", color=WHITE, name="smoothness_label")
+	smoothness_slider = Slider(135, 670, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE, GAUSS_SIGMA, 0, 10, name="smoothness")
 
 	widgets = OrderedDict()
 	widgets[background.name] = background
