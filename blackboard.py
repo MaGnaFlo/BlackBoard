@@ -1,25 +1,52 @@
 import pygame as pg 
 from pygame.locals import QUIT
-from parameters import *
+from parameters import PARAMS
 from widgets import ToolBar, Slider, Widget, Label
 from scipy.ndimage import gaussian_filter1d
-from functions import *
+from functions import draw_step, smooth
 from collections import OrderedDict
 
 
 if __name__ == "__main__":
 
 	pg.init()
-	screen = pg.display.set_mode((W,H))
+	screen = pg.display.set_mode(
+				(PARAMS["background"]["width"],
+				 PARAMS["background"]["height"]))
 
 	# add widgets
-	background = Widget(0, 0, W, H, BLACK, name="background")
-	tool_bar = ToolBar(0, H-TOOLBAR_THICKNESS, W, TOOLBAR_THICKNESS, GREY, name='tool_bar')
+	background = Widget(0, 0, PARAMS["background"]["width"],
+							  PARAMS["background"]["height"], 
+							  PARAMS["color"]["k"], 
+							  name="background")
+	tool_bar = ToolBar(0, PARAMS["background"]["height"]-PARAMS["toolbar"]["thickness"], 
+						  PARAMS["background"]["width"],
+						  PARAMS["toolbar"]["thickness"],
+						  PARAMS["color"]["b"], 
+						  PARAMS["slider"]["block_color"], 
+						  name='tool_bar')
 	
-	thickness_label = Label(20, 630 - SLIDER_THICKNESS - 2, "Thickness", color=WHITE, name="thickness_label")
-	thickness_slider = Slider(135, 630, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE, SLIDER_THICKNESS, 1, 20, name="thickness")
-	smoothness_label = Label(20, 670 - SLIDER_THICKNESS - 2, "Smoothness", color=WHITE, name="smoothness_label")
-	smoothness_slider = Slider(135, 670, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE, GAUSS_SIGMA, 0, 10, name="smoothness")
+	thickness_label = Label(20, 630 - PARAMS["slider"]["thickness"] - 2, 
+							"Thickness", color=PARAMS["color"]["w"], 
+							name="thickness_label")
+
+	thickness_slider = Slider(135, 630, PARAMS["slider"]["length"], 
+							PARAMS["slider"]["thickness"],
+							PARAMS["color"]["k"], 
+							PARAMS["slider"]["block_color"],
+							PARAMS["pencil"]["size_init"],
+							1, 20, name="thickness")
+
+	smoothness_label = Label(20, 670 - PARAMS["slider"]["thickness"] - 2, 
+							"Smoothness", color=PARAMS["color"]["w"], 
+							name="smoothness_label")
+
+	smoothness_slider = Slider(135, 670, PARAMS["slider"]["length"], 
+							PARAMS["slider"]["thickness"],
+							PARAMS["color"]["k"],
+							PARAMS["slider"]["block_color"],
+							PARAMS["pencil"]["size_init"], 
+							0, 10, name="smoothness")
 
 	widgets = OrderedDict()
 	widgets[background.name] = background
@@ -42,8 +69,8 @@ if __name__ == "__main__":
 	current_points_index = -1
 	start_smooth_index = 0
 
-	current_size = SIZE
-	current_smoothness = GAUSS_SIGMA
+	current_size = PARAMS["pencil"]["size_init"]
+	current_smoothness = PARAMS["smoothing"]["sigma_init"]
 	sizes = []
 	smoothnesses = []
 
@@ -90,10 +117,10 @@ if __name__ == "__main__":
 				if not widgets["background"].belongs(event.pos):
 					continue
 				elif tool_bar.belongs(event.pos):
-					if start_smooth_index >= N_POINTS_SMOOTH:
-						points_list = smooth_step(background, points_list, sizes,
+					if start_smooth_index >= PARAMS["smoothing"]["n_steps"]:
+						points_list = smooth(background, points_list, sizes,
 							current_points_index, start_smooth_index,
-							current_smoothness, mode=SMOOTH_MODE)
+							current_smoothness, mode=PARAMS["smoothing"]["mode"])
 						start_smooth_index = 0
 
 				if thickness_slider_move:
@@ -110,16 +137,16 @@ if __name__ == "__main__":
 						
 				elif draw_on:
 					for i, pts in enumerate(points_list):
-						[draw_step(background, WHITE, pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+						[draw_step(background, PARAMS["color"]["w"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 					
 					last_pos = event.pos
 					points_list[current_points_index].append(last_pos)
 					start_smooth_index += 1
 
-					if start_smooth_index >= N_POINTS_SMOOTH:
-						points_list = smooth_step(background, points_list, sizes,
+					if start_smooth_index >= PARAMS["smoothing"]["n_steps"]:
+						points_list = smooth(background, points_list, sizes,
 							current_points_index, start_smooth_index, 
-							current_smoothness, mode=SMOOTH_MODE)
+							current_smoothness, mode=PARAMS["smoothing"]["mode"])
 						start_smooth_index = 0
 
 			# keyboard TODO WITH WIDGET!
@@ -127,7 +154,7 @@ if __name__ == "__main__":
 				if event.key == pg.K_e:
 					points_list = [[]]
 					current_points_index = 0
-					background.fill(BLACK)
+					background.fill(PARAMS["color"]["k"])
 
 		# display widgets
 		temp = pg.sprite.Group()

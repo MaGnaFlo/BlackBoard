@@ -1,6 +1,6 @@
 import pygame as pg
 import pygame.gfxdraw
-from parameters import *
+from parameters import PARAMS
 from scipy.ndimage import gaussian_filter1d
 import numpy as np
 
@@ -9,19 +9,19 @@ def draw_step(widget, color, start, end, size):
 	pg.draw.line(widget.image, color, start, end, 2*size)
 	pg.draw.circle(widget.image, color, start, size)
 
-def smooth_step(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
+def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
 	''' Smoothes a portion of the drawing line.
 		points_index: index of the current line (set of points).
 		smooth_index: start index of the drawn line.
 	'''
 	# wipe
-	widget.image.fill(BLACK)
-	print(sigma)
+	widget.image.fill(PARAMS["color"]["k"])
+
 	# target last points
 	points_to_smooth = points[points_index]
 	if len(points_to_smooth) > smooth_index:
 		points_to_smooth = points_to_smooth[-smooth_index:]
-
+		print(sigma)
 	# smooth
 	if mode == "gaussian":
 		func = lambda x: gaussian_filter1d(x, sigma) if sigma>0 else x
@@ -39,6 +39,6 @@ def smooth_step(widget, points, sizes, points_index, smooth_index, sigma, mode="
 
 	# redraw
 	for i, pts in enumerate(points[:points_index]):
-		[draw_step(widget, WHITE, pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+		[draw_step(widget, PARAMS["color"]["w"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
 	return points
