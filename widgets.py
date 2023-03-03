@@ -6,7 +6,7 @@ class Widget(pg.sprite.Sprite):
 		super().__init__()
 		self.parent = super()
 		self.image = pg.Surface([width, height])
-		self.image.fill(color)
+		# self.image.fill(color)
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
@@ -24,15 +24,27 @@ class ToolBar(Widget):
 		super().__init__(x, y, width, height, color)
 		self.parent = super()
 		self.name = name
+		self.image.fill(color)
 
+class Label(Widget):
+	def __init__(self, x, y, text, font='Verdana', fontsize=14, color=WHITE, name=""):
+		super().__init__(x, y, len(text), fontsize, color, name=name)
+		self.font = pg.font.SysFont(font, fontsize)
+		self.image = self.font.render(text, 1, color)
+
+	# def draw(self):
+	# 	self.image.blit(self.textSurf, self.rect)
 
 class Slider(Widget):
 	def __init__(self, x, y, width, height, color, init_value, min_value, max_value, parent=None, name=""):
 		super().__init__(x, y, width, height, color)
 		self.parent = super()
+		self.image.fill(color)
+
 		self.block_size = height * 4 # TODO: careful with the '4'. changing it changes the centering
 		self.slider_block = Widget(x-self.block_size//4, y-self.block_size//4-height//2, 
 									self.block_size, self.block_size, WHITE, parent)
+		self.slider_block.image.fill(BLACK) # change color to parameter later
 		
 		# set block pos according to init_value
 		self.slider_block.rect.x = init_value / (max_value-min_value) * width + x
@@ -56,7 +68,7 @@ class Slider(Widget):
 			self.value = self.value / self.width * (self.max_value - self.min_value) + self.min_value
 			self.value = int(self.value)
 
-		return self.slider_block, self.value # arbitrary value
+		return self.slider_block, self.value
 
 	def belongs(self, pos):
 		x_, y_ = pos 

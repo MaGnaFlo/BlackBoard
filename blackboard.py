@@ -1,9 +1,10 @@
 import pygame as pg 
 from pygame.locals import QUIT
 from parameters import *
-from widgets import ToolBar, Slider, Widget
+from widgets import ToolBar, Slider, Widget, Label
 from scipy.ndimage import gaussian_filter1d
 from functions import *
+from collections import OrderedDict
 
 
 if __name__ == "__main__":
@@ -11,21 +12,28 @@ if __name__ == "__main__":
 	pg.init()
 	screen = pg.display.set_mode((W,H))
 
+	# add widgets
 	background = Widget(0, 0, W, H, BLACK, name="background")
-
 	tool_bar = ToolBar(0, H-TOOLBAR_THICKNESS, W, TOOLBAR_THICKNESS, GREY, name='tool_bar')
-	thickness_slider = Slider(50, 630, SLIDER_LENGTH, SLIDER_THICKNESS, BLACK, SLIDER_THICKNESS, 1, 50, name="thickness")
-	smoothness_slider = Slider(50, 670, SLIDER_LENGTH, SLIDER_THICKNESS, BLACK, GAUSS_SIGMA, 0, 10, name="smoothness")
+	
+	thickness_label = Label(20, 630 - SLIDER_THICKNESS, "Thickness", color=WHITE, name="thickness_label")
+	thickness_slider = Slider(150, 630, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE, SLIDER_THICKNESS, 1, 50, name="thickness")
+	smoothness_label = Label(20, 670 - SLIDER_THICKNESS, "Smoothness", color=WHITE, name="smoothness_label")
+	smoothness_slider = Slider(150, 670, SLIDER_LENGTH, SLIDER_THICKNESS, WHITE, GAUSS_SIGMA, 0, 10, name="smoothness")
 
-	# widgets = pg.sprite.Group()
-	widgets = {}
+	widgets = OrderedDict()
 	widgets[background.name] = background
 	widgets[tool_bar.name] = tool_bar
+
+	widgets[thickness_label.name] = thickness_label
 	widgets[thickness_slider.name] = thickness_slider
 	widgets[thickness_slider.name + "_block"] = thickness_slider.slider_block
+
+	widgets[smoothness_label.name] = smoothness_label
 	widgets[smoothness_slider.name] = smoothness_slider
 	widgets[smoothness_slider.name + "_block"] = smoothness_slider.slider_block
 
+	# init parameters and lists
 	draw_on = False
 	thickness_slider_move = False
 	smoothness_slider_move = False
@@ -39,6 +47,7 @@ if __name__ == "__main__":
 	sizes = []
 	smoothnesses = []
 
+	# main loop
 	running = True
 	while running:
 		for event in pg.event.get():
@@ -120,6 +129,7 @@ if __name__ == "__main__":
 					current_points_index = 0
 					background.fill(BLACK)
 
+		# display widgets
 		temp = pg.sprite.Group()
 		[temp.add(w) for w in widgets.values()]
 		temp.update()
