@@ -14,8 +14,8 @@ if __name__ == "__main__":
 	background = Widget(0, 0, W, H, BLACK, name="background")
 
 	tool_bar = ToolBar(0, H-TOOLBAR_THICKNESS, W, TOOLBAR_THICKNESS, GREY, name='tool_bar')
-	thickness_slider = Slider(50, 630, SLIDER_LENGTH, SLIDER_THICKNESS, BLACK, 1, 50, name="thickness")
-	smoothness_slider = Slider(50, 670, SLIDER_LENGTH, SLIDER_THICKNESS, BLACK, 50, 200, name="smoothness")
+	thickness_slider = Slider(50, 630, SLIDER_LENGTH, SLIDER_THICKNESS, BLACK, SLIDER_THICKNESS, 1, 50, name="thickness")
+	smoothness_slider = Slider(50, 670, SLIDER_LENGTH, SLIDER_THICKNESS, BLACK, GAUSS_SIGMA, 0, 10, name="smoothness")
 
 	# widgets = pg.sprite.Group()
 	widgets = {}
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 	start_smooth_index = 0
 
 	current_size = SIZE
-	current_smoothness = N_POINTS_SMOOTH
+	current_smoothness = GAUSS_SIGMA
 	sizes = []
 	smoothnesses = []
 
@@ -81,10 +81,10 @@ if __name__ == "__main__":
 				if not widgets["background"].belongs(event.pos):
 					continue
 				elif tool_bar.belongs(event.pos):
-					if start_smooth_index >= current_smoothness:
+					if start_smooth_index >= N_POINTS_SMOOTH:
 						points_list = smooth_step(background, points_list, sizes,
 							current_points_index, start_smooth_index,
-							sizes[current_points_index], mode=SMOOTH_MODE)
+							current_smoothness, mode=SMOOTH_MODE)
 						start_smooth_index = 0
 
 				if thickness_slider_move:
@@ -107,10 +107,10 @@ if __name__ == "__main__":
 					points_list[current_points_index].append(last_pos)
 					start_smooth_index += 1
 
-					if start_smooth_index >= current_smoothness:
+					if start_smooth_index >= N_POINTS_SMOOTH:
 						points_list = smooth_step(background, points_list, sizes,
 							current_points_index, start_smooth_index, 
-							sizes[current_points_index], mode=SMOOTH_MODE)
+							current_smoothness, mode=SMOOTH_MODE)
 						start_smooth_index = 0
 
 			# keyboard TODO WITH WIDGET!

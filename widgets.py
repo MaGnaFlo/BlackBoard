@@ -27,12 +27,16 @@ class ToolBar(Widget):
 
 
 class Slider(Widget):
-	def __init__(self, x, y, width, height, color, min_value, max_value, parent=None, name=""):
+	def __init__(self, x, y, width, height, color, init_value, min_value, max_value, parent=None, name=""):
 		super().__init__(x, y, width, height, color)
 		self.parent = super()
 		self.block_size = height * 4 # TODO: careful with the '4'. changing it changes the centering
 		self.slider_block = Widget(x-self.block_size//4, y-self.block_size//4-height//2, 
 									self.block_size, self.block_size, WHITE, parent)
+		
+		# set block pos according to init_value
+		self.slider_block.rect.x = init_value / (max_value-min_value) * width + x
+
 		self.width = width
 		self.height = height
 		self.x = x 
