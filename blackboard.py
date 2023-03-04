@@ -8,8 +8,7 @@ if __name__ == "__main__":
 
 	pg.init()
 	screen = pg.display.set_mode(
-				(PARAMS["background"]["width"],
-				 PARAMS["background"]["height"]))
+				(1000, 700))
 
 	# add widgets
 	widgets = init_widgets()

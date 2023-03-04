@@ -9,13 +9,13 @@ PARAMS = {
 	"background":
 	{
 		"width":1000,
-		"height":700,
-		"color":(0,0,0)
+		"height":600,
+		"color":(233,0,0)
 	},
 	"toolbar":
-	{
-		"thickness": 100,
-		"length": 700
+	{	
+		"height": 600,
+		"width": 100
 	},
 	"slider":
 	{

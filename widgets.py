@@ -1,6 +1,6 @@
 import pygame as pg
 from parameters import PARAMS
-from matplotlib import rcParams
+
 
 class Widget(pg.sprite.Sprite):
 	''' General class handling widgets. '''
@@ -64,7 +64,7 @@ class Slider(Widget):
 		self.block_size = height * 4 # TODO: careful with the '4'. changing it changes the centering
 		self.slider_block = Widget(x-self.block_size//4, y-self.block_size//4-height//2, 
 									self.block_size, self.block_size, 
-									block_color, parent)
+									block_color, parent, name=name+"_block")
 		self.block_color = block_color
 		self.slider_block.image.fill(block_color) # change color to parameter later
 		
