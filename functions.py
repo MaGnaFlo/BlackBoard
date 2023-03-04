@@ -8,11 +8,62 @@ import numpy as np
 from pygame.locals import QUIT
 
 
+def draw_step(widget, color, start, end, size):
+	''' Draws the link between two points in a drawing iteration. '''
+	pg.draw.line(widget.image, color, start, end, 2*size)
+	pg.draw.circle(widget.image, color, start, size)
+
+def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
+	''' Smoothes a portion of the drawing line.
+		points_index: index of the current line (set of points).
+		smooth_index: start index of the drawn line.
+	'''
+	# wipe
+	widget.image.fill(PARAMS["background"]["color"])
+
+	# target last points
+	points_to_smooth = points[points_index]
+	if len(points_to_smooth) > smooth_index:
+		points_to_smooth = points_to_smooth[-smooth_index:]
+
+	# smooth
+	if mode == "gaussian":
+		func = lambda x: gaussian_filter1d(x, sigma) if sigma>0 else x
+	elif mode == "savgol":
+		func = lambda x: savgol_filter(x, SAVGOL_WIN, SAVGOL_ORDER)
+	
+	x = list(np.array(points_to_smooth)[:,0])
+	y = list(np.array(points_to_smooth)[:,1])
+	xs = np.concatenate(([x[0]], func(x), [x[-1]]))
+	ys = np.concatenate(([y[0]], func(y), [y[-1]]))
+	
+	# reconstruct
+	points_smoothed = list(zip(xs,ys))
+	points = points[:points_index] + [points[points_index][:-smooth_index] + points_smoothed]
+
+	# redraw
+	for i, pts in enumerate(points[:points_index]):
+		[draw_step(widget, PARAMS["pencil"]["color"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+
+	return points
+
+
 def init_widgets():
+	''' Creates and stores widgets in a diciotnary
+		which keys depends on the (custom) name
+		of the widget.
+		The current implementation does not take into
+		account recursive drawing of widgets.
+		One has to create separate widgets for
+		nested ones.
+	'''
+
+	# create all widgets
 	background = ToolBar(0, 0, PARAMS["background"]["width"],
 							  PARAMS["background"]["height"], 
 							  PARAMS["background"]["color"], 
 							  name="background")
+
 	tool_bar = ToolBar(0, PARAMS["background"]["height"], 
 						  PARAMS["background"]["width"],
 						  PARAMS["toolbar"]["height"],
@@ -50,6 +101,7 @@ def init_widgets():
 							PARAMS["color"]["w"], text="Pencil",
 							name="pencil_button")
 
+	# store all widgets
 	widgets = OrderedDict()
 
 	widgets[background.name] = background
@@ -90,8 +142,8 @@ def loop(screen, widgets):
 	current_smoothness = PARAMS["smoothing"]["sigma_init"]
 	current_points_index = -1
 	start_smooth_index = 0
+	current_color = PARAMS["pencil"]["color"]
 
-	
 	# launching loop
 	running = True
 	while running:
@@ -157,6 +209,11 @@ def loop(screen, widgets):
 
 			# MOUSE MOVE
 			if event.type == pg.MOUSEMOTION:
+				if widgets["background"].belongs(event.pos):
+					pg.mouse.set_system_cursor(pg.SYSTEM_CURSOR_CROSSHAIR)
+				else:
+					pg.mouse.set_system_cursor(pg.SYSTEM_CURSOR_ARROW)
+
 				if widgets["tool_bar"].belongs(event.pos):
 					if start_smooth_index >= PARAMS["smoothing"]["n_steps"]:
 						points_list = smooth(background, points_list, sizes,
@@ -221,42 +278,3 @@ def loop(screen, widgets):
 		temp.draw(screen)
 		pg.display.flip()
 		del temp
-
-def draw_step(widget, color, start, end, size):
-	''' Draws the link between two points in a drawing iteration. '''
-	pg.draw.line(widget.image, color, start, end, 2*size)
-	pg.draw.circle(widget.image, color, start, size)
-
-def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
-	''' Smoothes a portion of the drawing line.
-		points_index: index of the current line (set of points).
-		smooth_index: start index of the drawn line.
-	'''
-	# wipe
-	widget.image.fill(PARAMS["background"]["color"])
-
-	# target last points
-	points_to_smooth = points[points_index]
-	if len(points_to_smooth) > smooth_index:
-		points_to_smooth = points_to_smooth[-smooth_index:]
-
-	# smooth
-	if mode == "gaussian":
-		func = lambda x: gaussian_filter1d(x, sigma) if sigma>0 else x
-	elif mode == "savgol":
-		func = lambda x: savgol_filter(x, SAVGOL_WIN, SAVGOL_ORDER)
-	
-	x = list(np.array(points_to_smooth)[:,0])
-	y = list(np.array(points_to_smooth)[:,1])
-	xs = np.concatenate(([x[0]], func(x), [x[-1]]))
-	ys = np.concatenate(([y[0]], func(y), [y[-1]]))
-	
-	# reconstruct
-	points_smoothed = list(zip(xs,ys))
-	points = points[:points_index] + [points[points_index][:-smooth_index] + points_smoothed]
-
-	# redraw
-	for i, pts in enumerate(points[:points_index]):
-		[draw_step(widget, PARAMS["pencil"]["color"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
-
-	return points
