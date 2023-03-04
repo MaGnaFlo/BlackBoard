@@ -27,12 +27,13 @@ if __name__ == "__main__":
 	current_smoothness = PARAMS["smoothing"]["sigma_init"]
 	sizes = []
 	smoothnesses = []
+	colors = []
 
 	# main loop
 	loop(screen, widgets, points_list, current_points_index,
 			draw_on, thickness_slider_move, current_size,
 			start_smooth_index,
 			smoothness_slider_move, current_smoothness,
-			sizes, smoothnesses)
+			sizes, smoothnesses, colors)
 
 	pg.quit()

@@ -9,7 +9,8 @@ PARAMS = {
 	"background":
 	{
 		"width":1000,
-		"height":700
+		"height":700,
+		"color":(0,0,0)
 	},
 	"toolbar":
 	{
@@ -24,6 +25,7 @@ PARAMS = {
 	},
 	"pencil":
 	{
+		"color": (255,255,255),
 		"size_init": 6
 	},
 	"smoothing":

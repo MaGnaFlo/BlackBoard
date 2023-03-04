@@ -1,5 +1,6 @@
 import pygame as pg
 from parameters import PARAMS
+from matplotlib import rcParams
 
 class Widget(pg.sprite.Sprite):
 	''' General class handling widgets. '''
@@ -36,6 +37,20 @@ class Label(Widget):
 		self.font = pg.font.SysFont(font, fontsize)
 		self.image = self.font.render(text, 1, color)
 		
+
+class Button(Widget):
+	def __init__(self, x, y, width, height, color, 
+					text="", font='Verdana', fontsize=14, text_color=PARAMS["color"]["k"],
+					name=""):
+
+		super().__init__(x, y, width, height, color, name=name)
+		x_text = x + width//2 - pg.font.SysFont(font, fontsize).size(text)[0]//2
+		self.image.fill(color)
+		self.text = Label(x_text, y, text, font=font, fontsize=fontsize, color=text_color)
+
+	def clicked(self):
+		print("hello")
+
 
 class Slider(Widget):
 	''' Slider widget.

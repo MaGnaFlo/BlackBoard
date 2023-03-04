@@ -1,7 +1,7 @@
 import pygame as pg
 import pygame.gfxdraw
 from parameters import PARAMS
-from widgets import Widget, ToolBar, Label, Slider
+from widgets import Widget, ToolBar, Label, Slider, Button
 from collections import OrderedDict
 from scipy.ndimage import gaussian_filter1d
 import numpy as np
@@ -28,7 +28,7 @@ def init_widgets():
 							PARAMS["color"]["k"], 
 							PARAMS["slider"]["block_color"],
 							PARAMS["pencil"]["size_init"],
-							1, 20, name="thickness")
+							1, 20, name="thickness_slider")
 
 	smoothness_label = Label(20, 670 - PARAMS["slider"]["thickness"] - 2, 
 							"Smoothness", color=PARAMS["color"]["w"], 
@@ -39,7 +39,11 @@ def init_widgets():
 							PARAMS["color"]["k"],
 							PARAMS["slider"]["block_color"],
 							PARAMS["pencil"]["size_init"], 
-							0, 10, name="smoothness")
+							0, 10, name="smoothness_slider")
+
+	eraser_button = Button(500, 650, 50, 20,
+							PARAMS["color"]["w"], text="hello",
+							name="eraser_button")
 
 	widgets = OrderedDict()
 	widgets[background.name] = background
@@ -53,6 +57,9 @@ def init_widgets():
 	widgets[smoothness_slider.name] = smoothness_slider
 	widgets[smoothness_slider.name + "_block"] = smoothness_slider.slider_block
 
+	widgets[eraser_button.name] = eraser_button
+	widgets[eraser_button.name + "_text"] = eraser_button.text
+
 	return widgets
 
 def loop(screen, widgets, 
@@ -60,7 +67,7 @@ def loop(screen, widgets,
 			draw_on, thickness_slider_move, current_size,
 			start_smooth_index,
 			smoothness_slider_move, current_smoothness,
-			sizes, smoothnesses):
+			sizes, smoothnesses, colors):
 	running = True
 	while running:
 		for event in pg.event.get():
@@ -70,24 +77,28 @@ def loop(screen, widgets,
 					if w.name == "background":
 						if not w.belongs(event.pos):
 							continue
-					if w.name == "tool_bar":
+					elif w.name == "tool_bar":
 						continue
-					if w.name == "thickness":
+					elif w.name == "thickness_slider":
 						belong = w.belongs(event.pos)
 						if belong == 2:
 							thickness_slider_move = True
 						elif belong == 1:
 							continue
-					elif w.name == "smoothness":
+					elif w.name == "smoothness_slider":
 						belong = w.belongs(event.pos)
 						if belong == 2:
 							smoothness_slider_move = True
 						elif belong == 1:
 							continue
+					elif w.name == "eraser_button":
+						if w.belongs(event.pos):
+							PARAMS["pencil"]["color"] = PARAMS["background"]["color"]
 					else:
 						last_pos = event.pos
 						points_list.append([])
 						sizes.append(current_size)
+						colors.append(PARAMS["pencil"]["color"])
 						current_points_index += 1
 						draw_on = True
 
@@ -107,20 +118,20 @@ def loop(screen, widgets,
 						start_smooth_index = 0
 
 				if thickness_slider_move:
-					w = widgets["thickness"]
+					w = widgets["thickness_slider"]
 					block, size = w.update_block_pos(event.pos)
 					widgets["thickness_block"] = block
 					current_size = size
 
 				elif smoothness_slider_move:
-					w = widgets["smoothness"]
+					w = widgets["smoothness_slider"]
 					block, smoothness = w.update_block_pos(event.pos)
 					widgets["smoothness_block"] = block
 					current_smoothness = smoothness
 						
 				elif draw_on:
 					for i, pts in enumerate(points_list):
-						[draw_step(widgets["background"], PARAMS["color"]["w"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+						[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 					
 					last_pos = event.pos
 					points_list[current_points_index].append(last_pos)
@@ -188,6 +199,6 @@ def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gauss
 
 	# redraw
 	for i, pts in enumerate(points[:points_index]):
-		[draw_step(widget, PARAMS["color"]["w"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+		[draw_step(widget, PARAMS["pencil"]["color"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
 	return points
