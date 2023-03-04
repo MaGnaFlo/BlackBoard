@@ -10,12 +10,13 @@ PARAMS = {
 	{
 		"width":1000,
 		"height":600,
-		"color":(233,0,0)
+		"color":(0,50,100)
 	},
 	"toolbar":
 	{	
 		"height": 600,
-		"width": 100
+		"width": 100,
+		"color": (0,50,160)
 	},
 	"slider":
 	{

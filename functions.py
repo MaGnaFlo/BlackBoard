@@ -15,7 +15,7 @@ def init_widgets():
 	tool_bar = ToolBar(0, PARAMS["background"]["height"], 
 						  PARAMS["background"]["width"],
 						  PARAMS["toolbar"]["height"],
-						  PARAMS["color"]["b"], 
+						  PARAMS["toolbar"]["color"], 
 						  PARAMS["slider"]["block_color"], 
 						  name='tool_bar')
 	
@@ -75,13 +75,15 @@ def loop(screen, widgets,
 			start_smooth_index,
 			smoothness_slider_move, current_smoothness,
 			sizes, smoothnesses, colors):
+	
+	eraser_on = False
 	running = True
+	pencil_types = []
 	while running:
 		for event in pg.event.get():
 			# mouse
 			if event.type == pg.MOUSEBUTTONDOWN:
 				for w in widgets.values():
-					print(w.name)
 					if w.name == "background":
 						if not w.belongs(event.pos):
 							continue
@@ -90,7 +92,13 @@ def loop(screen, widgets,
 							points_list.append([])
 							sizes.append(current_size)
 							colors.append(PARAMS["pencil"]["color"])
+							smoothnesses.append(current_smoothness)
+							pencil_types.append("pencil")
 							current_points_index += 1
+							if eraser_on:
+								pencil_types.append("eraser")
+							else:
+								pencil_types.append("pencil")
 							draw_on = True
 
 					elif w.name == "tool_bar":
@@ -113,14 +121,18 @@ def loop(screen, widgets,
 					elif w.name == "eraser_button":
 						if w.belongs(event.pos):
 							PARAMS["pencil"]["color"] = PARAMS["background"]["color"]
+							current_smoothness = 1
+							eraser_on = True
 
 					elif w.name == "pencil_button":
 						if w.belongs(event.pos):
-							if len(colors) > 0:
-								print(colors)
-								print(sizes)
-								# PARAMS["pencil"]["color"] = colors[-2]
-								# colors[-1]
+							if eraser_on and len(colors) > 1:
+								found = False
+								n = 0
+								while not found and n < len(pencil_types):
+									found = (pencil_types[-n]=="pencil")
+									PARAMS["pencil"]["color"] = colors[n]
+									current_smoothness = smoothnesses[n]
 
 			if event.type == pg.MOUSEBUTTONUP:
 				draw_on = False
@@ -128,9 +140,7 @@ def loop(screen, widgets,
 				smoothness_slider_move = False
 
 			if event.type == pg.MOUSEMOTION:
-				if not widgets["background"].belongs(event.pos):
-					continue
-				elif widgets["tool_bar"].belongs(event.pos):
+				if widgets["tool_bar"].belongs(event.pos):
 					if start_smooth_index >= PARAMS["smoothing"]["n_steps"]:
 						points_list = smooth(background, points_list, sizes,
 							current_points_index, start_smooth_index,
@@ -168,7 +178,7 @@ def loop(screen, widgets,
 				if event.key == pg.K_e:
 					points_list = []
 					current_points_index = -1
-					widgets["background"].image.fill(PARAMS["color"]["k"])
+					widgets["background"].image.fill(PARAMS["background"]["color"])
 
 				elif event.key == pg.K_q:
 					running = False
