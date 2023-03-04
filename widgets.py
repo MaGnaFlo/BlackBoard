@@ -48,9 +48,6 @@ class Button(Widget):
 		self.image.fill(color)
 		self.text = Label(x_text, y, text, font=font, fontsize=fontsize, color=text_color)
 
-	def clicked(self):
-		print("hello")
-
 
 class Slider(Widget):
 	''' Slider widget.

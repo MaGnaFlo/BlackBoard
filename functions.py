@@ -69,16 +69,28 @@ def init_widgets():
 
 	return widgets
 
-def loop(screen, widgets, 
-			points_list, current_points_index,
-			draw_on, thickness_slider_move, current_size,
-			start_smooth_index,
-			smoothness_slider_move, current_smoothness,
-			sizes, smoothnesses, colors):
+def loop(screen, widgets):
 	
+	# initialize parameters and lists
+	draw_on = False
 	eraser_on = False
+	thickness_slider_move = False
+	smoothness_slider_move = False
+
+	points_list = []
+	current_points_index = -1
+	start_smooth_index = 0
+
+	current_size = PARAMS["pencil"]["size_init"]
+	current_smoothness = PARAMS["smoothing"]["sigma_init"]
+	sizes = []
+	smoothnesses = []
+	colors = []
+	
 	running = True
 	pencil_types = []
+
+
 	while running:
 		for event in pg.event.get():
 			# mouse
@@ -173,7 +185,7 @@ def loop(screen, widgets,
 							current_smoothness, mode=PARAMS["smoothing"]["mode"])
 						start_smooth_index = 0
 
-			# keyboard TODO WITH WIDGET!
+			# keyboard
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_e:
 					points_list = []
@@ -183,8 +195,20 @@ def loop(screen, widgets,
 				elif event.key == pg.K_q:
 					running = False
 
+				elif event.key == pg.K_z and pg.key.get_mods() and pg.KMOD_LCTRL:
+					points_list = points_list[:-1]
+					colors = colors[:-1]
+					sizes = sizes[:-1]
+					smoothnesses = smoothnesses[:-1]
+					current_points_index -= 1
+					widgets["background"].image.fill(PARAMS["background"]["color"])
+					for i, pts in enumerate(points_list):
+						[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+
+
 			if event.type == QUIT:
 				running = False
+
 
 		# display widgets
 		temp = pg.sprite.Group()
