@@ -79,9 +79,10 @@ class Slider(Widget):
 		self.value = min_value
 		self.name = name
 
-	def update_block_pos(self, pos): # set for horizontal slider
+	def update_block_pos(self, pos):
 		''' Sets the position of the slider block along the slider.
 		    Sets the corresponding value accordingly.
+		    The current implementation is only for horizontal sliders.
 		'''
 		x, y = pos
 		if self.rect.x <= x <= self.rect.x + self.rect.width:
