@@ -7,6 +7,7 @@ from scipy.ndimage import gaussian_filter1d
 import numpy as np
 from pygame.locals import QUIT
 
+
 def init_widgets():
 	background = ToolBar(0, 0, PARAMS["background"]["width"],
 							  PARAMS["background"]["height"], 
@@ -69,19 +70,34 @@ def init_widgets():
 
 	return widgets
 
-def loop(screen, widgets, 
-			points_list, current_points_index,
-			draw_on, thickness_slider_move, current_size,
-			start_smooth_index,
-			smoothness_slider_move, current_smoothness,
-			sizes, smoothnesses, colors):
-	
+def loop(screen, widgets):
+	''' Main loop responsible for displaying the sprits
+		and managing events
+	'''
+	# initialize parameters and lists
+	draw_on = False
 	eraser_on = False
-	running = True
+	thickness_slider_move = False
+	smoothness_slider_move = False
+
+	points_list = []
+	sizes = []
+	smoothnesses = []
+	colors = []
 	pencil_types = []
+	
+	current_size = PARAMS["pencil"]["size_init"]
+	current_smoothness = PARAMS["smoothing"]["sigma_init"]
+	current_points_index = -1
+	start_smooth_index = 0
+
+	
+	# launching loop
+	running = True
 	while running:
 		for event in pg.event.get():
-			# mouse
+			# MOUSE ##############################################
+			# MOUSE DOWN
 			if event.type == pg.MOUSEBUTTONDOWN:
 				for w in widgets.values():
 					if w.name == "background":
@@ -133,12 +149,13 @@ def loop(screen, widgets,
 									found = (pencil_types[-n]=="pencil")
 									PARAMS["pencil"]["color"] = colors[n]
 									current_smoothness = smoothnesses[n]
-
+			# MOUSE UP
 			if event.type == pg.MOUSEBUTTONUP:
 				draw_on = False
 				thickness_slider_move = False
 				smoothness_slider_move = False
 
+			# MOUSE MOVE
 			if event.type == pg.MOUSEMOTION:
 				if widgets["tool_bar"].belongs(event.pos):
 					if start_smooth_index >= PARAMS["smoothing"]["n_steps"]:
@@ -173,7 +190,7 @@ def loop(screen, widgets,
 							current_smoothness, mode=PARAMS["smoothing"]["mode"])
 						start_smooth_index = 0
 
-			# keyboard TODO WITH WIDGET!
+			# KEYBOARD ##################################################
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_e:
 					points_list = []
@@ -183,7 +200,18 @@ def loop(screen, widgets,
 				elif event.key == pg.K_q:
 					running = False
 
-			if event.type == QUIT:
+				elif event.key == pg.K_z and pg.key.get_mods() and pg.KMOD_LCTRL:
+					points_list = points_list[:-1]
+					colors = colors[:-1]
+					sizes = sizes[:-1]
+					smoothnesses = smoothnesses[:-1]
+					current_points_index -= 1
+					widgets["background"].image.fill(PARAMS["background"]["color"])
+					for i, pts in enumerate(points_list):
+						[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+
+			# QUIT ######################################################
+			elif event.type == QUIT:
 				running = False
 
 		# display widgets

@@ -31,7 +31,7 @@ class ToolBar(Widget):
 
 
 class Label(Widget):
-	''' Label widget'''
+	''' Label widget. '''
 	def __init__(self, x, y, text, font='Verdana', fontsize=14, color=PARAMS["color"]["w"], name=""):
 		super().__init__(x, y, len(text), fontsize, color, name=name)
 		self.font = pg.font.SysFont(font, fontsize)
@@ -39,6 +39,7 @@ class Label(Widget):
 		
 
 class Button(Widget):
+	''' Button widget - contains a label. '''
 	def __init__(self, x, y, width, height, color, 
 					text="", font='Verdana', fontsize=14, text_color=PARAMS["color"]["k"],
 					name=""):
@@ -47,9 +48,6 @@ class Button(Widget):
 		x_text = x + width//2 - pg.font.SysFont(font, fontsize).size(text)[0]//2
 		self.image.fill(color)
 		self.text = Label(x_text, y, text, font=font, fontsize=fontsize, color=text_color)
-
-	def clicked(self):
-		print("hello")
 
 
 class Slider(Widget):
