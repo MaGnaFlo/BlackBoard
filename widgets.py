@@ -1,6 +1,7 @@
 import pygame as pg
 from parameters import PARAMS
 
+
 class Widget(pg.sprite.Sprite):
 	''' General class handling widgets. '''
 	def __init__(self, x, y, width, height, color, parent=None, name=""):
@@ -37,6 +38,20 @@ class Label(Widget):
 		self.image = self.font.render(text, 1, color)
 		
 
+class Button(Widget):
+	def __init__(self, x, y, width, height, color, 
+					text="", font='Verdana', fontsize=14, text_color=PARAMS["color"]["k"],
+					name=""):
+
+		super().__init__(x, y, width, height, color, name=name)
+		x_text = x + width//2 - pg.font.SysFont(font, fontsize).size(text)[0]//2
+		self.image.fill(color)
+		self.text = Label(x_text, y, text, font=font, fontsize=fontsize, color=text_color)
+
+	def clicked(self):
+		print("hello")
+
+
 class Slider(Widget):
 	''' Slider widget.
 		Includes a slider block. 
@@ -49,7 +64,7 @@ class Slider(Widget):
 		self.block_size = height * 4 # TODO: careful with the '4'. changing it changes the centering
 		self.slider_block = Widget(x-self.block_size//4, y-self.block_size//4-height//2, 
 									self.block_size, self.block_size, 
-									block_color, parent)
+									block_color, parent, name=name+"_block")
 		self.block_color = block_color
 		self.slider_block.image.fill(block_color) # change color to parameter later
 		

@@ -9,12 +9,14 @@ PARAMS = {
 	"background":
 	{
 		"width":1000,
-		"height":700
+		"height":600,
+		"color":(0,50,100)
 	},
 	"toolbar":
-	{
-		"thickness": 100,
-		"length": 700
+	{	
+		"height": 600,
+		"width": 100,
+		"color": (0,50,160)
 	},
 	"slider":
 	{
@@ -24,6 +26,7 @@ PARAMS = {
 	},
 	"pencil":
 	{
+		"color": (255,255,255),
 		"size_init": 6
 	},
 	"smoothing":

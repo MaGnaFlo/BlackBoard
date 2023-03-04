@@ -1,21 +1,21 @@
 import pygame as pg
 import pygame.gfxdraw
 from parameters import PARAMS
-from widgets import Widget, ToolBar, Label, Slider
+from widgets import Widget, ToolBar, Label, Slider, Button
 from collections import OrderedDict
 from scipy.ndimage import gaussian_filter1d
 import numpy as np
 from pygame.locals import QUIT
 
 def init_widgets():
-	background = Widget(0, 0, PARAMS["background"]["width"],
+	background = ToolBar(0, 0, PARAMS["background"]["width"],
 							  PARAMS["background"]["height"], 
-							  PARAMS["color"]["k"], 
+							  PARAMS["background"]["color"], 
 							  name="background")
-	tool_bar = ToolBar(0, PARAMS["background"]["height"]-PARAMS["toolbar"]["thickness"], 
+	tool_bar = ToolBar(0, PARAMS["background"]["height"], 
 						  PARAMS["background"]["width"],
-						  PARAMS["toolbar"]["thickness"],
-						  PARAMS["color"]["b"], 
+						  PARAMS["toolbar"]["height"],
+						  PARAMS["toolbar"]["color"], 
 						  PARAMS["slider"]["block_color"], 
 						  name='tool_bar')
 	
@@ -41,7 +41,16 @@ def init_widgets():
 							PARAMS["pencil"]["size_init"], 
 							0, 10, name="smoothness")
 
+	eraser_button = Button(500, 630, 70, 20,
+							PARAMS["color"]["w"], text="Eraser",
+							name="eraser_button")
+
+	pencil_button = Button(500, 670, 70, 20,
+							PARAMS["color"]["w"], text="Pencil",
+							name="pencil_button")
+
 	widgets = OrderedDict()
+
 	widgets[background.name] = background
 	widgets[tool_bar.name] = tool_bar
 
@@ -53,6 +62,11 @@ def init_widgets():
 	widgets[smoothness_slider.name] = smoothness_slider
 	widgets[smoothness_slider.name + "_block"] = smoothness_slider.slider_block
 
+	widgets[eraser_button.name] = eraser_button
+	widgets[eraser_button.name + "_text"] = eraser_button.text
+	widgets[pencil_button.name] = pencil_button
+	widgets[pencil_button.name + "_text"] = pencil_button.text
+
 	return widgets
 
 def loop(screen, widgets, 
@@ -60,8 +74,11 @@ def loop(screen, widgets,
 			draw_on, thickness_slider_move, current_size,
 			start_smooth_index,
 			smoothness_slider_move, current_smoothness,
-			sizes, smoothnesses):
+			sizes, smoothnesses, colors):
+	
+	eraser_on = False
 	running = True
+	pencil_types = []
 	while running:
 		for event in pg.event.get():
 			# mouse
@@ -70,26 +87,52 @@ def loop(screen, widgets,
 					if w.name == "background":
 						if not w.belongs(event.pos):
 							continue
-					if w.name == "tool_bar":
+						else:
+							last_pos = event.pos
+							points_list.append([])
+							sizes.append(current_size)
+							colors.append(PARAMS["pencil"]["color"])
+							smoothnesses.append(current_smoothness)
+							pencil_types.append("pencil")
+							current_points_index += 1
+							if eraser_on:
+								pencil_types.append("eraser")
+							else:
+								pencil_types.append("pencil")
+							draw_on = True
+
+					elif w.name == "tool_bar":
 						continue
-					if w.name == "thickness":
+
+					elif w.name == "thickness":
 						belong = w.belongs(event.pos)
 						if belong == 2:
 							thickness_slider_move = True
 						elif belong == 1:
 							continue
+
 					elif w.name == "smoothness":
 						belong = w.belongs(event.pos)
 						if belong == 2:
 							smoothness_slider_move = True
 						elif belong == 1:
 							continue
-					else:
-						last_pos = event.pos
-						points_list.append([])
-						sizes.append(current_size)
-						current_points_index += 1
-						draw_on = True
+
+					elif w.name == "eraser_button":
+						if w.belongs(event.pos):
+							PARAMS["pencil"]["color"] = PARAMS["background"]["color"]
+							current_smoothness = 1
+							eraser_on = True
+
+					elif w.name == "pencil_button":
+						if w.belongs(event.pos):
+							if eraser_on and len(colors) > 1:
+								found = False
+								n = 0
+								while not found and n < len(pencil_types):
+									found = (pencil_types[-n]=="pencil")
+									PARAMS["pencil"]["color"] = colors[n]
+									current_smoothness = smoothnesses[n]
 
 			if event.type == pg.MOUSEBUTTONUP:
 				draw_on = False
@@ -97,9 +140,7 @@ def loop(screen, widgets,
 				smoothness_slider_move = False
 
 			if event.type == pg.MOUSEMOTION:
-				if not widgets["background"].belongs(event.pos):
-					continue
-				elif widgets["tool_bar"].belongs(event.pos):
+				if widgets["tool_bar"].belongs(event.pos):
 					if start_smooth_index >= PARAMS["smoothing"]["n_steps"]:
 						points_list = smooth(background, points_list, sizes,
 							current_points_index, start_smooth_index,
@@ -112,15 +153,15 @@ def loop(screen, widgets,
 					widgets["thickness_block"] = block
 					current_size = size
 
-				elif smoothness_slider_move:
+				if smoothness_slider_move:
 					w = widgets["smoothness"]
 					block, smoothness = w.update_block_pos(event.pos)
 					widgets["smoothness_block"] = block
 					current_smoothness = smoothness
 						
-				elif draw_on:
+				if draw_on:
 					for i, pts in enumerate(points_list):
-						[draw_step(widgets["background"], PARAMS["color"]["w"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+						[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 					
 					last_pos = event.pos
 					points_list[current_points_index].append(last_pos)
@@ -137,7 +178,7 @@ def loop(screen, widgets,
 				if event.key == pg.K_e:
 					points_list = []
 					current_points_index = -1
-					widgets["background"].image.fill(PARAMS["color"]["k"])
+					widgets["background"].image.fill(PARAMS["background"]["color"])
 
 				elif event.key == pg.K_q:
 					running = False
@@ -164,13 +205,13 @@ def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gauss
 		smooth_index: start index of the drawn line.
 	'''
 	# wipe
-	widget.image.fill(PARAMS["color"]["k"])
+	widget.image.fill(PARAMS["background"]["color"])
 
 	# target last points
 	points_to_smooth = points[points_index]
 	if len(points_to_smooth) > smooth_index:
 		points_to_smooth = points_to_smooth[-smooth_index:]
-		print(sigma)
+
 	# smooth
 	if mode == "gaussian":
 		func = lambda x: gaussian_filter1d(x, sigma) if sigma>0 else x
@@ -188,6 +229,6 @@ def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gauss
 
 	# redraw
 	for i, pts in enumerate(points[:points_index]):
-		[draw_step(widget, PARAMS["color"]["w"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+		[draw_step(widget, PARAMS["pencil"]["color"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
 	return points
