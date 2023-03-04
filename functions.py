@@ -41,9 +41,13 @@ def init_widgets():
 							PARAMS["pencil"]["size_init"], 
 							0, 10, name="smoothness_slider")
 
-	eraser_button = Button(500, 650, 50, 20,
-							PARAMS["color"]["w"], text="hello",
+	eraser_button = Button(500, 630, 70, 20,
+							PARAMS["color"]["w"], text="Eraser",
 							name="eraser_button")
+
+	pencil_button = Button(500, 670, 70, 20,
+							PARAMS["color"]["w"], text="Pencil",
+							name="pencil_button")
 
 	widgets = OrderedDict()
 	widgets[background.name] = background
@@ -59,6 +63,8 @@ def init_widgets():
 
 	widgets[eraser_button.name] = eraser_button
 	widgets[eraser_button.name + "_text"] = eraser_button.text
+	widgets[pencil_button.name] = pencil_button
+	widgets[pencil_button.name + "_text"] = pencil_button.text
 
 	return widgets
 
@@ -77,9 +83,9 @@ def loop(screen, widgets,
 					if w.name == "background":
 						if not w.belongs(event.pos):
 							continue
-					elif w.name == "tool_bar":
+					if w.name == "tool_bar":
 						continue
-					elif w.name == "thickness_slider":
+					if w.name == "thickness_slider":
 						belong = w.belongs(event.pos)
 						if belong == 2:
 							thickness_slider_move = True
@@ -94,6 +100,9 @@ def loop(screen, widgets,
 					elif w.name == "eraser_button":
 						if w.belongs(event.pos):
 							PARAMS["pencil"]["color"] = PARAMS["background"]["color"]
+					elif w.name == "pencil_button":
+						if w.belongs(event.pos):
+							PARAMS["pencil"]["color"] = PARAMS["color"]["w"]
 					else:
 						last_pos = event.pos
 						points_list.append([])
