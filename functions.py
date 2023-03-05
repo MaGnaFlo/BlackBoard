@@ -10,8 +10,9 @@ from pygame.locals import QUIT
 
 def draw_step(widget, color, start, end, size):
 	''' Draws the link between two points in a drawing iteration. '''
-	pg.draw.line(widget.image, color, start, end, 2*size)
 	pg.draw.circle(widget.image, color, start, size)
+	pg.draw.line(widget.image, color, start, end, 2*size)
+	pg.draw.circle(widget.image, color, end, size)
 
 def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
 	''' Smoothes a portion of the drawing line.
@@ -64,44 +65,42 @@ def init_widgets():
 							  PARAMS["background"]["color"], 
 							  name="background")
 
-	tool_bar = ToolBar(0, PARAMS["background"]["height"], 
-						  PARAMS["background"]["width"],
+	tool_bar = ToolBar(   PARAMS["toolbar"]["x"], 
+						  PARAMS["toolbar"]["y"],
+						  PARAMS["toolbar"]["width"],
 						  PARAMS["toolbar"]["height"],
 						  PARAMS["toolbar"]["color"], 
 						  PARAMS["slider"]["block_color"], 
 						  name='tool_bar')
-	
-	thickness_label = Label(20, 630 - PARAMS["slider"]["thickness"] - 2, 
-							"Thickness", color=PARAMS["color"]["w"], 
-							name="thickness_label")
 
-	thickness_slider = Slider(135, 630, PARAMS["slider"]["length"], 
+	thickness_slider = Slider(-350, -25, PARAMS["slider"]["length"], 
 							PARAMS["slider"]["thickness"],
 							PARAMS["color"]["k"], 
 							PARAMS["slider"]["block_color"],
 							PARAMS["pencil"]["size_init"],
-							1, 20, name="thickness")
+							1, 20, 
+							parent=tool_bar, name="thickness")
 
-	smoothness_label = Label(20, 670 - PARAMS["slider"]["thickness"] - 2, 
-							"Smoothness", color=PARAMS["color"]["w"], 
-							name="smoothness_label")
-
-	smoothness_slider = Slider(135, 670, PARAMS["slider"]["length"], 
+	smoothness_slider = Slider(-350, 15, PARAMS["slider"]["length"], 
 							PARAMS["slider"]["thickness"],
 							PARAMS["color"]["k"],
 							PARAMS["slider"]["block_color"],
-							PARAMS["pencil"]["size_init"], 
-							0, 10, name="smoothness")
+							PARAMS["pencil"]["size_init"],
+							0, 10, 
+							parent=tool_bar, name="smoothness")
 
-	eraser_button = Button(500, 630, 70, 20,
+	eraser_button = Button(10, 15, 70, 20,
 							PARAMS["color"]["w"], text="Eraser",
+							parent=tool_bar,
 							name="eraser_button")
 
-	pencil_button = Button(500, 670, 70, 20,
+	pencil_button = Button(10, -25, 70, 20,
 							PARAMS["color"]["w"], text="Pencil",
+							parent=tool_bar,
 							name="pencil_button")
 
-	color_palette = ColorPalette(700, 625, 30, 10, name="palette")
+	color_palette = ColorPalette(200, -20, 30, 10, 
+								 parent=tool_bar, name="palette")
 
 	# store all widgets
 	widgets = OrderedDict()
@@ -109,11 +108,11 @@ def init_widgets():
 	widgets[background.name] = background
 	widgets[tool_bar.name] = tool_bar
 
-	widgets[thickness_label.name] = thickness_label
+	widgets[thickness_slider.label.name+"_label"] = thickness_slider.label
 	widgets[thickness_slider.name] = thickness_slider
 	widgets[thickness_slider.name + "_block"] = thickness_slider.slider_block
 
-	widgets[smoothness_label.name] = smoothness_label
+	widgets[smoothness_slider.label.name+"_label"] = smoothness_slider.label
 	widgets[smoothness_slider.name] = smoothness_slider
 	widgets[smoothness_slider.name + "_block"] = smoothness_slider.slider_block
 
@@ -281,9 +280,24 @@ def loop(screen, widgets):
 					for i, pts in enumerate(points_list):
 						[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
-			# QUIT ######################################################
+			# GENERAL ######################################################
 			elif event.type == QUIT:
 				running = False
+
+			elif event.type == pygame.VIDEORESIZE:
+				# set parameters
+				PARAMS["screen"]["width"] = event.w
+				PARAMS["screen"]["height"] = event.h
+				PARAMS["background"]["width"] = event.w
+				PARAMS["background"]["height"] = event.h - 100
+				PARAMS["toolbar"]["y"] = PARAMS["background"]["height"]
+				PARAMS["toolbar"]["height"] = 100
+				PARAMS["toolbar"]["width"] = event.w
+
+				# re init and redraw
+				widgets = init_widgets()
+				for i, pts in enumerate(points_list):
+					[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
 		# display widgets
 		temp = pg.sprite.Group()
