@@ -8,10 +8,14 @@ class Widget(pg.sprite.Sprite):
 		super().__init__()
 		self.parent = super()
 		self.image = pg.Surface([width, height])
+		self.image.fill(color)
+
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
 		self.name = name
+
+		self.color = color
 
 	def belongs(self, pos):
 		''' Check if pos is on the widget. '''
@@ -46,8 +50,43 @@ class Button(Widget):
 
 		super().__init__(x, y, width, height, color, name=name)
 		x_text = x + width//2 - pg.font.SysFont(font, fontsize).size(text)[0]//2
-		self.image.fill(color)
 		self.text = Label(x_text, y, text, font=font, fontsize=fontsize, color=text_color)
+
+
+class ColorPalette(Button):
+	def __init__(self, x, y, cell_size=20, margin=5, name=""):
+		
+
+		# for now, hard code the palette in this class.
+		# in the future, possibility to add colors as args and
+		# deduce the palette shape and behavior.
+
+		
+		self.n_cols = 4 
+		self.n_rows = 1
+
+		self.cell_size = cell_size
+		self.margin = margin
+		
+
+		self.colors = {c:PARAMS["color"][c] for c in ["k","w","r","g"]}# hard-coded
+
+		self.color_surfaces = []
+		for i, (name_, c) in enumerate(self.colors.items()):
+			xc = x + i*(cell_size+margin) + margin
+			# for y, I consider i=0 systematically for one row (for now).
+			yc = y + 0*(cell_size+margin) + margin
+			surf = Widget(xc, yc, cell_size, cell_size, c, name=name+"c="+name_)
+			self.color_surfaces.append(surf)
+
+		# build layout
+		width = self.n_cols * cell_size + (self.n_cols+1)*margin
+		height = self.n_rows * cell_size + (self.n_rows+1)*margin
+		super().__init__(x, y, width, height, (90,0,150), name=name)
+
+		# add alpha to layout
+		# self.image.convert_alpha()
+		# self.image.set_alpha(100)
 
 
 class Slider(Widget):
@@ -78,6 +117,7 @@ class Slider(Widget):
 		self.max_value = max_value
 		self.value = min_value
 		self.name = name
+
 
 	def update_block_pos(self, pos):
 		''' Sets the position of the slider block along the slider.
@@ -113,3 +153,6 @@ class Slider(Widget):
 			return 1
 		else:
 			return 0
+ 
+
+		

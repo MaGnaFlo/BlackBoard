@@ -1,7 +1,7 @@
 import pygame as pg
 import pygame.gfxdraw
 from parameters import PARAMS
-from widgets import Widget, ToolBar, Label, Slider, Button
+from widgets import *
 from collections import OrderedDict
 from scipy.ndimage import gaussian_filter1d
 import numpy as np
@@ -101,6 +101,8 @@ def init_widgets():
 							PARAMS["color"]["w"], text="Pencil",
 							name="pencil_button")
 
+	color_palette = ColorPalette(700, 625, 30, 10, name="palette")
+
 	# store all widgets
 	widgets = OrderedDict()
 
@@ -119,6 +121,10 @@ def init_widgets():
 	widgets[eraser_button.name + "_text"] = eraser_button.text
 	widgets[pencil_button.name] = pencil_button
 	widgets[pencil_button.name + "_text"] = pencil_button.text
+
+	widgets[color_palette.name] = color_palette
+	for col in color_palette.color_surfaces:
+		widgets[col.name] = col
 
 	return widgets
 
@@ -201,6 +207,14 @@ def loop(screen, widgets):
 									found = (pencil_types[-n]=="pencil")
 									PARAMS["pencil"]["color"] = colors[n]
 									current_smoothness = smoothnesses[n]
+
+					elif w.name == "palette":
+						if w.belongs(event.pos):
+							for cell in w.color_surfaces:
+								if cell.belongs(event.pos):
+									PARAMS["pencil"]["color"] = cell.color
+
+
 			# MOUSE UP
 			if event.type == pg.MOUSEBUTTONUP:
 				draw_on = False
