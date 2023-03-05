@@ -207,6 +207,14 @@ def loop(screen, widgets):
 									found = (pencil_types[-n]=="pencil")
 									PARAMS["pencil"]["color"] = colors[n]
 									current_smoothness = smoothnesses[n]
+
+					elif w.name == "palette":
+						if w.belongs(event.pos):
+							for cell in w.color_surfaces:
+								if cell.belongs(event.pos):
+									PARAMS["pencil"]["color"] = cell.color
+
+
 			# MOUSE UP
 			if event.type == pg.MOUSEBUTTONUP:
 				draw_on = False

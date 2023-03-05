@@ -15,6 +15,8 @@ class Widget(pg.sprite.Sprite):
 		self.rect.y = y
 		self.name = name
 
+		self.color = color
+
 	def belongs(self, pos):
 		''' Check if pos is on the widget. '''
 		x_, y_ = pos 
@@ -67,19 +69,20 @@ class ColorPalette(Button):
 		self.margin = margin
 		
 
-		self.colors = {"k":(0,0,0), "w":(255,255,255), "r":(255,50,70), "y":(35, 160, 150)}
+		self.colors = {c:PARAMS["color"][c] for c in ["k","w","r","g"]}# hard-coded
+
 		self.color_surfaces = []
 		for i, (name_, c) in enumerate(self.colors.items()):
 			xc = x + i*(cell_size+margin) + margin
 			# for y, I consider i=0 systematically for one row (for now).
 			yc = y + 0*(cell_size+margin) + margin
-			surf = Widget(xc, yc, cell_size, cell_size, c, name=name_)
+			surf = Widget(xc, yc, cell_size, cell_size, c, name=name+"c="+name_)
 			self.color_surfaces.append(surf)
 
 		# build layout
 		width = self.n_cols * cell_size + (self.n_cols+1)*margin
 		height = self.n_rows * cell_size + (self.n_rows+1)*margin
-		super().__init__(x, y, width, height, (90,0,150), name="color_palette")
+		super().__init__(x, y, width, height, (90,0,150), name=name)
 
 		# add alpha to layout
 		# self.image.convert_alpha()
