@@ -265,6 +265,9 @@ def loop(screen, widgets):
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_e:
 					points_list = []
+					colors = []
+					sizes = []
+					smoothnesses = []
 					current_points_index = -1
 					widgets["background"].image.fill(PARAMS["background"]["color"])
 
