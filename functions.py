@@ -12,7 +12,6 @@ def draw_step(widget, color, start, end, size):
 	''' Draws the link between two points in a drawing iteration. '''
 	pg.draw.circle(widget.image, color, start, size)
 	pg.draw.line(widget.image, color, start, end, 2*size)
-	pg.draw.circle(widget.image, color, end, size)
 
 def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
 	''' Smoothes a portion of the drawing line.
