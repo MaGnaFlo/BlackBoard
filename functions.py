@@ -264,6 +264,9 @@ def loop(screen, widgets):
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_e:
 					points_list = []
+					colors = []
+					sizes = []
+					smoothnesses = []
 					current_points_index = -1
 					widgets["background"].image.fill(PARAMS["background"]["color"])
 
@@ -271,14 +274,15 @@ def loop(screen, widgets):
 					running = False
 
 				elif event.key == pg.K_z and pg.key.get_mods() and pg.KMOD_LCTRL:
-					points_list = points_list[:-1]
-					colors = colors[:-1]
-					sizes = sizes[:-1]
-					smoothnesses = smoothnesses[:-1]
-					current_points_index -= 1
-					widgets["background"].image.fill(PARAMS["background"]["color"])
-					for i, pts in enumerate(points_list):
-						[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+					if len(points_list) > 0:
+						points_list = points_list[:-1]
+						colors = colors[:-1]
+						sizes = sizes[:-1]
+						smoothnesses = smoothnesses[:-1]
+						current_points_index -= 1
+						widgets["background"].image.fill(PARAMS["background"]["color"])
+						for i, pts in enumerate(points_list):
+							[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
 			# GENERAL ######################################################
 			elif event.type == QUIT:
