@@ -7,14 +7,17 @@ class Widget(pg.sprite.Sprite):
 	def __init__(self, x, y, width, height, color, parent=None, name=""):
 		super().__init__()
 		self.parent = super()
+
 		self.image = pg.Surface([width, height])
 		self.image.fill(color)
 
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
-		self.name = name
+		self.rect.width = width
+		self.rect.height = height
 
+		self.name = name
 		self.color = color
 
 	def belongs(self, pos):
@@ -36,7 +39,11 @@ class ToolBar(Widget):
 
 class Label(Widget):
 	''' Label widget. '''
-	def __init__(self, x, y, text, font='Verdana', fontsize=14, color=PARAMS["color"]["w"], name=""):
+	def __init__(self, x, y, text, font='Verdana', fontsize=14, color=PARAMS["color"]["w"], parent=None, name=""):
+		if parent is not None:
+			x += parent.rect.x + parent.rect.width//2
+			y += parent.rect.y + parent.rect.height//2
+			print(parent.name, x, y)
 		super().__init__(x, y, len(text), fontsize, color, name=name)
 		self.font = pg.font.SysFont(font, fontsize)
 		self.image = self.font.render(text, 1, color)
@@ -46,21 +53,25 @@ class Button(Widget):
 	''' Button widget - contains a label. '''
 	def __init__(self, x, y, width, height, color, 
 					text="", font='Verdana', fontsize=14, text_color=PARAMS["color"]["k"],
-					name=""):
-
-		super().__init__(x, y, width, height, color, name=name)
+					parent=None, name=""):
+		if parent is not None:
+			x += parent.rect.x + parent.rect.width//2
+			y += parent.rect.y + parent.rect.height//2
+		super().__init__(x, y, width, height, color, parent=self, name=name)
 		x_text = x + width//2 - pg.font.SysFont(font, fontsize).size(text)[0]//2
 		self.text = Label(x_text, y, text, font=font, fontsize=fontsize, color=text_color)
 
 
 class ColorPalette(Button):
-	def __init__(self, x, y, cell_size=20, margin=5, name=""):
-		
+	def __init__(self, x, y, cell_size=20, margin=5, parent=None, name=""):
+
+		if parent is not None:
+			x += parent.rect.x + parent.rect.width//2
+			y += parent.rect.y + parent.rect.height//2
 
 		# for now, hard code the palette in this class.
 		# in the future, possibility to add colors as args and
 		# deduce the palette shape and behavior.
-
 		
 		self.n_cols = 4 
 		self.n_rows = 1
@@ -84,9 +95,14 @@ class ColorPalette(Button):
 		height = self.n_rows * cell_size + (self.n_rows+1)*margin
 		super().__init__(x, y, width, height, (90,0,150), name=name)
 
-		# add alpha to layout
-		# self.image.convert_alpha()
-		# self.image.set_alpha(100)
+
+class Block(Widget):
+	''' Slider block '''
+	def __init__(self, x, y, width, height, color, parent=None, name=""):
+		if parent is not None:
+			x += parent.rect.x + parent.rect.width//2
+			y += parent.rect.y + parent.rect.height//2
+		super().__init__(x, y, width, height, color)
 
 
 class Slider(Widget):
@@ -94,14 +110,18 @@ class Slider(Widget):
 		Includes a slider block. 
 	'''
 	def __init__(self, x, y, width, height, color, block_color, init_value, min_value, max_value, parent=None, name=""):
+		if parent is not None:
+			x += parent.rect.x + parent.rect.width//2
+			y += parent.rect.y + parent.rect.height//2
 		super().__init__(x, y, width, height, color)
+
 		self.parent = super()
 		self.image.fill(color)
 
 		self.block_size = height * 4 # TODO: careful with the '4'. changing it changes the centering
-		self.slider_block = Widget(x-self.block_size//4, y-self.block_size//4-height//2, 
+		self.slider_block = Block(-self.block_size//4, -self.block_size//4-height,
 									self.block_size, self.block_size, 
-									block_color, parent, name=name+"_block")
+									block_color, parent=self, name=name+"_block")
 		self.block_color = block_color
 		self.slider_block.image.fill(block_color) # change color to parameter later
 		
@@ -110,13 +130,19 @@ class Slider(Widget):
 
 		self.width = width
 		self.height = height
-		self.x = x 
+		self.x = x
 		self.y = y
+
+		self.rect.x = x
+		self.rect.y = y
 
 		self.min_value = min_value
 		self.max_value = max_value
 		self.value = min_value
 		self.name = name
+
+		self.label = Label(-self.width, -PARAMS["slider"]["thickness"] - 4, name, color=PARAMS["color"]["w"], 
+						parent=self, name=name)
 
 
 	def update_block_pos(self, pos):

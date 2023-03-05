@@ -1,5 +1,10 @@
 
 PARAMS = {
+	"screen":
+	{
+		"width" : 1000,
+		"height": 700
+	},
 	"color":
 	{
 		"k": (0,0,0),
@@ -15,8 +20,10 @@ PARAMS = {
 	},
 	"toolbar":
 	{	
-		"height": 600,
-		"width": 100,
+		"x": 0,
+		"y": 600,
+		"height": 100,
+		"width": 1000,
 		"color": (0,50,160)
 	},
 	"slider":
@@ -37,16 +44,3 @@ PARAMS = {
 		"sigma_init": 5
 	}
 }
-
-W, H = 1000, 700
-TOOLBAR_THICKNESS = 100
-SLIDER_THICKNESS = 6
-SLIDER_LENGTH = 200
-
-SIZE = 6
-
-N_POINTS_SMOOTH = 50
-
-
-SMOOTH_MODE = "gaussian"
-GAUSS_SIGMA = 5

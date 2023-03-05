@@ -7,7 +7,8 @@ from functions import *
 if __name__ == "__main__":
 
 	pg.init()
-	screen = pg.display.set_mode((1000, 700))
+	screen = pg.display.set_mode((PARAMS["screen"]["width"], PARAMS["screen"]["height"]), 
+									pg.RESIZABLE)
 
 	# add widgets
 	widgets = init_widgets()
