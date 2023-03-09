@@ -35,12 +35,12 @@ PARAMS = {
 	"pencil":
 	{
 		"color": (255,255,255),
-		"size_init": 6
+		"size_init": 2
 	},
 	"smoothing":
 	{
-		"n_steps": 50,
-		"mode": "gaussian",
+		"n_steps": 25,
+		"mode": "spline",
 		"sigma_init": 5
 	}
 }

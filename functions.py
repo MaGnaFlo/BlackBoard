@@ -4,6 +4,7 @@ from parameters import PARAMS
 from widgets import *
 from collections import OrderedDict
 from scipy.ndimage import gaussian_filter1d
+from scipy import interpolate
 import numpy as np
 from pygame.locals import QUIT
 
@@ -13,30 +14,39 @@ def draw_step(widget, color, start, end, size):
 	pg.draw.circle(widget.image, color, start, size)
 	pg.draw.line(widget.image, color, start, end, int(2*size))
 
+
+def B_spline(points):
+	x, y = np.array(points).T
+	w = [i for i in range(len(x))]
+	tck, _ = interpolate.splprep([x, y], s=100)
+	u = np.linspace(0, 1, 100)
+	xs, ys = interpolate.splev(u, tck)
+	return xs, ys
+
 def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
 	''' Smoothes a portion of the drawing line.
 		points_index: index of the current line (set of points).
 		smooth_index: start inedx of the drawn line.
 	'''
-	
-
 	# target last points
 	points_to_smooth = points[points_index]
 	if len(points_to_smooth) > smooth_index:
 		points_to_smooth = points_to_smooth[-smooth_index:]
+	if len(points_to_smooth) < 3:
+		return points
 
-	# smooth
+	# smooth methods
 	if mode == "gaussian":
-		func = lambda x: gaussian_filter1d(x, sigma) if sigma>0 else x
+		func = lambda pts: (np.concatenate(([pts[1][0]], gaussian_filter1d(pts[0], sigma), [pts[0][-1]])) if sigma>0 else pts[0],
+								np.concatenate(([pts[1][0]], gaussian_filter1d(pts[1], sigma), [pts[1][-1]])) if sigma>0 else pts[1])
 	elif mode == "savgol":
-		func = lambda x: savgol_filter(x, SAVGOL_WIN, SAVGOL_ORDER)
+		func = lambda pts: (np.concatenate(([pts[1][0]], savgol_filter(pts[0], SAVGOL_WIN, SAVGOL_ORDER), pts[0][-1]) if sigma>0 else pts[0],
+								np.concatenate([pts[1][0]], savgol_filter(pts[1], SAVGOL_WIN, SAVGOL_ORDER), pts[1][-1])) if sigma>0 else pts[1])
+	elif mode == "spline":
+		func = lambda pts: B_spline(points_to_smooth)
 	
-	x = list(np.array(points_to_smooth)[:,0])
-	y = list(np.array(points_to_smooth)[:,1])
-	xs = np.concatenate(([x[0]], func(x), [x[-1]]))
-	ys = np.concatenate(([y[0]], func(y), [y[-1]]))
-	
-	# reconstruct
+	# perform smoothing and reconstruct
+	xs, ys = func(points_to_smooth)
 	points_smoothed = list(zip(xs,ys))
 	points = points[:points_index] + [points[points_index][:-smooth_index] + points_smoothed]
 
