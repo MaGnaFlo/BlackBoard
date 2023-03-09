@@ -11,15 +11,14 @@ from pygame.locals import QUIT
 def draw_step(widget, color, start, end, size):
 	''' Draws the link between two points in a drawing iteration. '''
 	pg.draw.circle(widget.image, color, start, size)
-	pg.draw.line(widget.image, color, start, end, 2*size)
+	pg.draw.line(widget.image, color, start, end, int(2*size))
 
 def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gaussian"):
 	''' Smoothes a portion of the drawing line.
 		points_index: index of the current line (set of points).
-		smooth_index: start index of the drawn line.
+		smooth_index: start inedx of the drawn line.
 	'''
-	# wipe
-	widget.image.fill(PARAMS["background"]["color"])
+	
 
 	# target last points
 	points_to_smooth = points[points_index]
@@ -42,6 +41,7 @@ def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gauss
 	points = points[:points_index] + [points[points_index][:-smooth_index] + points_smoothed]
 
 	# redraw
+	widget.image.fill(PARAMS["background"]["color"])
 	for i, pts in enumerate(points[:points_index]):
 		[draw_step(widget, PARAMS["pencil"]["color"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
@@ -246,8 +246,6 @@ def loop(screen, widgets):
 					current_smoothness = smoothness
 						
 				if draw_on:
-					for i, pts in enumerate(points_list):
-						[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 					
 					last_pos = event.pos
 					points_list[current_points_index].append(last_pos)
@@ -302,10 +300,17 @@ def loop(screen, widgets):
 				for i, pts in enumerate(points_list):
 					[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
+		# redraw
+		screen.fill(PARAMS["background"]["color"])
+
+		for i, pts in enumerate(points_list):
+			[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+
 		# display widgets
 		temp = pg.sprite.Group()
 		[temp.add(w) for w in widgets.values()]
 		temp.update()
 		temp.draw(screen)
+
 		pg.display.flip()
 		del temp
