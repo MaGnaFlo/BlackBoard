@@ -12,14 +12,14 @@ from pygame.locals import QUIT
 def draw_step(widget, color, start, end, size):
 	''' Draws the link between two points in a drawing iteration. '''
 	pg.draw.circle(widget.image, color, start, size)
-	pg.draw.line(widget.image, color, start, end, int(2*size))
+	# pg.draw.line(widget.image, color, start, end, int(2*size))
 
 
 def B_spline(points):
 	x, y = np.array(points).T
 	w = [i for i in range(len(x))]
-	tck, _ = interpolate.splprep([x, y], s=100)
-	u = np.linspace(0, 1, 100)
+	tck, _ = interpolate.splprep([x, y], ub=(x[0],y[0]), ue=(x[-1],y[-1]), s=100)
+	u = np.linspace(0, 1, 1000)
 	xs, ys = interpolate.splev(u, tck)
 	return xs, ys
 
@@ -31,7 +31,7 @@ def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gauss
 	# target last points
 	points_to_smooth = points[points_index]
 	if len(points_to_smooth) > smooth_index:
-		points_to_smooth = points_to_smooth[-smooth_index:]
+		points_to_smooth = points_to_smooth[-smooth_index-1:]
 	if len(points_to_smooth) < 3:
 		return points
 
@@ -46,16 +46,21 @@ def smooth(widget, points, sizes, points_index, smooth_index, sigma, mode="gauss
 		func = lambda pts: B_spline(points_to_smooth)
 	
 	# perform smoothing and reconstruct
-	xs, ys = func(points_to_smooth)
-	points_smoothed = list(zip(xs,ys))
-	points = points[:points_index] + [points[points_index][:-smooth_index] + points_smoothed]
+	try:
+		xs, ys = func(points_to_smooth)
+		points_smoothed = list(zip(xs,ys))
+		points = points[:points_index] + [points[points_index][:-smooth_index-1] + points_smoothed]
+	
+	except:
+		pass
 
-	# redraw
-	widget.image.fill(PARAMS["background"]["color"])
-	for i, pts in enumerate(points[:points_index]):
-		[draw_step(widget, PARAMS["pencil"]["color"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
+	finally:
+		# redraw
+		widget.image.fill(PARAMS["background"]["color"])
+		for i, pts in enumerate(points[:points_index]):
+			[draw_step(widget, PARAMS["pencil"]["color"], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
-	return points
+		return points
 
 
 def init_widgets():
@@ -159,6 +164,7 @@ def loop(screen, widgets):
 	current_color = PARAMS["pencil"]["color"]
 
 	# launching loop
+	it = 0
 	running = True
 	while running:
 		for event in pg.event.get():
@@ -222,7 +228,6 @@ def loop(screen, widgets):
 								if cell.belongs(event.pos):
 									PARAMS["pencil"]["color"] = cell.color
 
-
 			# MOUSE UP
 			if event.type == pg.MOUSEBUTTONUP:
 				draw_on = False
@@ -261,11 +266,7 @@ def loop(screen, widgets):
 					points_list[current_points_index].append(last_pos)
 					start_smooth_index += 1
 
-					if start_smooth_index >= PARAMS["smoothing"]["n_steps"]:
-						points_list = smooth(widgets["background"], points_list, sizes,
-							current_points_index, start_smooth_index, 
-							current_smoothness, mode=PARAMS["smoothing"]["mode"])
-						start_smooth_index = 0
+					
 
 			# KEYBOARD ##################################################
 			elif event.type == pg.KEYDOWN:
@@ -310,6 +311,13 @@ def loop(screen, widgets):
 				for i, pts in enumerate(points_list):
 					[draw_step(widgets["background"], colors[i], pts[j], pts[j+1], sizes[i]) for j in range(len(pts)-1)]
 
+		if it > current_smoothness and start_smooth_index > 3:
+			points_list = smooth(widgets["background"], points_list, sizes,
+			current_points_index, start_smooth_index, 
+			current_smoothness, mode=PARAMS["smoothing"]["mode"])
+			start_smooth_index = 0
+			it = 0
+
 		# redraw
 		screen.fill(PARAMS["background"]["color"])
 
@@ -323,4 +331,6 @@ def loop(screen, widgets):
 		temp.draw(screen)
 
 		pg.display.flip()
-		del temp
+		it += 1
+
+
